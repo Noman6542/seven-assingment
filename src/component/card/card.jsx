@@ -3,17 +3,23 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faCalendarDays } from "@fortawesome/free-solid-svg-icons";
 import { faCircle } from "@fortawesome/free-solid-svg-icons";
 
-const Card = ({ cardPromiss, onCardClick,selectedCards,onComplete }) => {
+const Card = ({ cardPromiss, onCardClick, selectedCards,        onComplete, resolvedCards }) => {
   const cardData = use(cardPromiss);
 
+   const remainingCards = cardData.filter(
+    (c) => 
+      !selectedCards.find((s) => s.id === c.id) && 
+      !resolvedCards.find((r) => r.id === c.id)
+  );
+  
   return (
-    <div className="md:flex justify-center mt-10 max-w-[1200px] mx-auto gap-2 md:gap-5 px-5">
+    <div className="md:flex justify-center mt-10 max-w-[1600px] mx-auto gap-2 md:gap-5 px-5">
   <div className="">
    <h1 className="font-semibold text-[24px]">
   Customer Tickets </h1>
 
 <div className="grid md:grid-cols-2 gap-3 mt-6">
-   {cardData.map((card) => (
+   {remainingCards.map((card) => (
         <div key={card.id}
               className="card bg-base-100 card-sm shadow-sm px-9 py-6 gap-2 cursor-pointer"onClick={() => onCardClick(card)}>
    <div className="">
@@ -76,7 +82,32 @@ const Card = ({ cardPromiss, onCardClick,selectedCards,onComplete }) => {
             ))}
           </div>
         )}
+
+        <div>
+        <h1 className="font-semibold text-[24px] mb-4">Resolved Tickets</h1>
+        {resolvedCards.length === 0 ? (
+          <p className="text-[#627382]">No resolved tickets yet</p>
+        ) : (
+          <div className="space-y-3">
+            {resolvedCards.map((card) => (
+              <div key={card.id} className="p-3 bg-green-50 border border-green-200 shadow-sm rounded-md">
+                <span className="block font-medium text-green-700">{card.title}</span>
+                <span className="text-xs text-green-600">Resolved</span>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+
+
         </div>
+
+       
+
+
+
+
+
       </div>
   );
 };
