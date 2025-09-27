@@ -1,46 +1,51 @@
-import { Suspense, useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
+import { Suspense, useState,useEffect } from 'react'
 import './App.css'
 import Navbar from './component/navbar/Navbar'
 import Banner from './component/banner/Banner'
 import Card from './component/card/card'
 import { ToastContainer, toast } from 'react-toastify';
-
-
-
-
-
-
-const cardData = async()=>{
-  const res = await fetch('/card.json')
-  return res.json()
-}
-
-
+import Footer from './component/footer/Footer'
 
 function App() {
+    const [cards, setCards] = useState([]);
   const [selectedCards, setSelectedCards] = useState([]);
-  const [resolvedCards, setResolvedCards] = useState([]); 
-  const [count, setCount] = useState(0)
-  const [resolvedCount, setResolvedCount] = useState(0)
+  const [resolvedCards, setResolvedCards] = useState([]);
+  const [count, setCount] = useState(0);
+  const [resolvedCount, setResolvedCount] = useState(0);
 
-   const handleCardClick = (card) => {
-    setSelectedCards([...selectedCards, card])
-    setCount(count + 1) 
-    toast.success(`In Progress`);
+  useEffect(() => {
+    const fetchData = async () => {
+      const res = await fetch('/card.json');
+      const data = await res.json();
+      setCards(data);
+    };
+    fetchData();
+  }, []);
+
+const handleCardClick = (card) => {
+     setSelectedCards(prev => [...prev, card]);
+     setCount(prev => prev + 1);
+
+      toast.success(`In Progress`);
+    
+  };
+
+  const handleComplete = (cardId) => {
+  const completedCard = selectedCards.find(c => c.cardId === cardId);
+  if (!completedCard) return;
+
+  const alreadyResolved = resolvedCards.some(c => c.cardId === cardId);
+  if (!alreadyResolved) {
+    setResolvedCards(prev => [...prev, completedCard]);
+    setResolvedCount(prev => prev + 1);
   }
 
-     const handleComplete = (id) => {
-  const completedCard = selectedCards.find((c) => c.id === id);
+  setSelectedCards(prev => prev.filter(c => c.cardId !== cardId));
+  setCount(prev => prev - 1);
+  setCards(prev => prev.filter(c => c.cardId !== cardId));
+};
 
-  setSelectedCards(selectedCards.filter((c) => c.id !== id));
-  setResolvedCards([...resolvedCards, completedCard]);
-  setCount(count - 1);
-  setResolvedCount(resolvedCount + 1);
-}; 
-
-  const cardPromiss = cardData();
+ 
 
   return (
     <div className='bg-[#f5f5f5] max-w-[1600px] mx-auto'>
@@ -48,14 +53,11 @@ function App() {
     
     <Banner  count={count} resolvedCount={resolvedCount}></Banner>
 
-   <Suspense fallback={
-    <div className="flex justify-center items-center min-h-[300px]">
-      <span className="loading loading-spinner loading-xl"></span>
-    </div>
-  }>
-     <Card cardPromiss={cardPromiss} onCardClick={handleCardClick} selectedCards={selectedCards} onComplete={handleComplete} resolvedCards={resolvedCards}></Card>
+   <Suspense fallback={<h4>Data is loading.....</h4>}>
+     <Card cards={cards} onCardClick={handleCardClick} selectedCards={selectedCards} onComplete={handleComplete} resolvedCards={resolvedCards}></Card>
    </Suspense>
-  
+
+    <Footer></Footer>
 
     <ToastContainer  position="top-right" autoClose={2000}/>
     </div>
